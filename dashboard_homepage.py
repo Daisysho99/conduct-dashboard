@@ -30,6 +30,23 @@ BNM_STYLE = """
     margin-bottom: 4px;
 }
 
+/* Force center alignment for ALL st.image containers */
+div[data-testid="stImage"] {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+}
+
+/* Center Streamlit images (logo) */
+div[data-testid="stImage"] img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
 /* Prototype tag under the title */
 .prototype-tag {
     font-size: 18px;
@@ -76,30 +93,28 @@ h2, h3, h4 {
 
 /* Make layout nicer on mobile */
 @media (max-width: 768px) {
-    .banner {
-        padding: 16px;
+    .stImage img {
+        width: 130px !important;  /* smaller logo on phone */
     }
+
     .banner h1 {
         font-size: 22px;
     }
+
     .prototype-tag {
         font-size: 14px;
-    }
-    .banner p {
-        font-size: 12px;
     }
 }
 
 </style>
 """
 
-
 st.markdown(BNM_STYLE, unsafe_allow_html=True)
 
 # ---------- LOGO ABOVE BANNER ----------
-logo_col1, logo_col2, logo_col3 = st.columns([1, 1, 1])
+slogo_col1, logo_col2, logo_col3 = st.columns([1, 2, 1])
 with logo_col2:
-    st.image("bnm_logo.png", width=250)
+    st.image("bnm_logo.png", width=200)
 
 # ---------- HEADER ----------
 st.markdown("""
@@ -671,4 +686,3 @@ with tab4:
 
         st.pyplot(make_resolution_timeline(df_handling, bank_choice))
         st.pyplot(make_recurrence_trend(df_handling, bank_choice))
-
