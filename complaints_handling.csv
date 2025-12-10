@@ -1,0 +1,13 @@
+complaint_id,bank_name,date,product,complaint_type,severity,days_to_resolve,resolved_within_timeline,reopened_case,escalated_case,repeat_same_issue
+1,Bank A,2025-01-05,Credit Card,Unfair fee,High,25,0,1,1,1
+2,Bank A,2025-01-18,Personal Loan,Mis-selling,Medium,12,1,0,0,0
+3,Bank A,2025-02-03,Credit Card,Misleading info,High,18,0,0,1,1
+4,Bank A,2025-03-10,Savings,Service issue,Low,5,1,0,0,0
+5,Bank B,2025-01-07,Credit Card,Harassment,High,20,0,1,1,1
+6,Bank B,2025-02-15,Personal Loan,Unfair fee,Medium,8,1,0,0,0
+7,Bank B,2025-03-02,Savings,Service issue,Low,4,1,0,0,0
+8,Bank B,2025-04-20,Credit Card,Unauthorised txn,High,30,0,1,1,1
+9,Bank C,2025-02-11,Credit Card,Suitability,Medium,10,1,0,0,0
+10,Bank C,2025-03-27,Personal Loan,Harassment,High,16,0,0,1,1
+11,Bank C,2025-04-05,Savings,Service issue,Low,6,1,0,0,0
+12,Bank C,2025-05-09,Credit Card,Unfair fee,High,22,0,1,1,1

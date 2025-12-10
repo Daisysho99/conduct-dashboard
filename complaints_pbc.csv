@@ -1,0 +1,13 @@
+complaint_id,bank_name,date,product,severity,issue_transparency,issue_suitability,issue_misleading,issue_unfair_fee,issue_vulnerable,pbc_hidden_fee,pbc_misleading_statement,pbc_harassment,pbc_unauthorised_txn,complaint_text
+1,Bank A,2025-01-05,Credit Card,High,1,1,1,1,0,1,1,0,0,"I was charged a hidden fee and the salesperson did not explain the product properly."
+2,Bank A,2025-01-18,Personal Loan,Medium,0,1,0,1,0,1,0,0,0,"There were fees I did not know about when I took this loan."
+3,Bank A,2025-02-03,Credit Card,High,1,0,1,1,1,1,1,0,0,"The marketing was misleading and there were hidden charges that affected my balance."
+4,Bank A,2025-03-10,Savings,Low,0,0,0,0,0,0,0,0,0,"General service issue, no serious conduct problem."
+5,Bank B,2025-01-07,Credit Card,High,1,1,0,0,0,0,1,1,0,"Agent was very pushy and called many times to pressure me to sign up."
+6,Bank B,2025-02-15,Personal Loan,Medium,0,0,1,1,0,1,0,0,0,"I was misled about the interest rate and later discovered extra fees."
+7,Bank B,2025-03-02,Savings,Low,0,0,0,0,0,0,0,0,0,"Minor delay in service only."
+8,Bank B,2025-04-20,Credit Card,High,1,1,1,1,1,1,1,0,1,"Hidden fees and an unauthorised transaction appeared on my credit card statement."
+9,Bank C,2025-02-11,Credit Card,Medium,0,1,0,0,0,0,0,0,0,"Product was okay but not clearly explained."
+10,Bank C,2025-03-27,Personal Loan,High,1,0,1,0,1,0,1,0,0,"Salesperson used aggressive language and I felt pressured to take the loan."
+11,Bank C,2025-04-05,Savings,Low,0,0,0,0,0,0,0,0,0,"Small complaint about waiting time."
+12,Bank C,2025-05-09,Credit Card,High,1,1,1,1,0,1,0,0,1,"I noticed hidden fees and an unauthorised transaction deduction this month."
