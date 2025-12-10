@@ -17,7 +17,7 @@ BNM_STYLE = """
 /* BNM Header Banner */
 .banner {
     background-color: #003B88;
-    padding: 25px;
+    padding: 22px;
     border-radius: 8px;
     color: white;
     margin-bottom: 25px;
@@ -25,12 +25,23 @@ BNM_STYLE = """
     font-family: 'Arial', sans-serif;
 }
 .banner h1 {
-    font-size: 36px;
+    font-size: 32px;
     font-weight: 700;
+    margin-bottom: 4px;
 }
+
+/* Prototype tag under the title */
+.prototype-tag {
+    font-size: 18px;
+    font-weight: 400;
+    opacity: 0.9;
+    margin-bottom: 6px;
+}
+
+/* Subtitle */
 .banner p {
-    font-size: 16px;
-    margin-top: -8px;
+    font-size: 14px;
+    margin-top: 0px;
 }
 
 /* KPI Card Style */
@@ -63,8 +74,25 @@ h2, h3, h4 {
     color: #003B88 !important;
 }
 
+/* Make layout nicer on mobile */
+@media (max-width: 768px) {
+    .banner {
+        padding: 16px;
+    }
+    .banner h1 {
+        font-size: 22px;
+    }
+    .prototype-tag {
+        font-size: 14px;
+    }
+    .banner p {
+        font-size: 12px;
+    }
+}
+
 </style>
 """
+
 
 st.markdown(BNM_STYLE, unsafe_allow_html=True)
 
@@ -74,15 +102,13 @@ with logo_col2:
     st.image("bnm_logo.png", width=250)
 
 # ---------- HEADER ----------
-st.markdown(
-    """
+st.markdown("""
 <div class="banner">
-    <h1>Bank Negara Malaysia — Conduct Risk Dashboard(Prototype)</h1>
+    <h1>Bank Negara Malaysia — Conduct Risk Dashboard</h1>
+    <div class="prototype-tag">(Prototype)</div>
     <p>Monitoring FTFC, Prohibited Conduct & Complaints Handling Across Financial Institutions</p>
 </div>
-""",
-    unsafe_allow_html=True
-)
+""", unsafe_allow_html=True)
 
 # ---------- DATA LOADING ----------
 @st.cache_data
@@ -645,3 +671,4 @@ with tab4:
 
         st.pyplot(make_resolution_timeline(df_handling, bank_choice))
         st.pyplot(make_recurrence_trend(df_handling, bank_choice))
+
