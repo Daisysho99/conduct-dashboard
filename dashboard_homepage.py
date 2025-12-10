@@ -1,19 +1,90 @@
-import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 import streamlit as st
 
 # ---------- PAGE CONFIG ----------
-
 st.set_page_config(
-    page_title="Conduct Risk Dashboard (Prototype)",
+    page_title="BNM Conduct Risk Dashboard",
     page_icon="🏦",
     layout="wide",
 )
 
+# ---------- BNM CUSTOM CSS ----------
+BNM_STYLE = """
+<style>
+
+/* BNM Header Banner */
+.banner {
+    background-color: #003B88;
+    padding: 25px;
+    border-radius: 8px;
+    color: white;
+    margin-bottom: 25px;
+    text-align: center;
+    font-family: 'Arial', sans-serif;
+}
+.banner h1 {
+    font-size: 36px;
+    font-weight: 700;
+}
+.banner p {
+    font-size: 16px;
+    margin-top: -8px;
+}
+
+/* KPI Card Style */
+.metric-container {
+    background-color: #E6EEF8;
+    padding: 15px;
+    border-radius: 10px;
+    border-left: 6px solid #003B88;
+    margin-bottom: 15px;
+}
+
+/* Sidebar Style */
+section[data-testid="stSidebar"] {
+    background-color: #003B88 !important;
+}
+.sidebar-text {
+    color: white !important;
+    font-size: 16px !important;
+}
+
+/* Tabs Styling */
+.stTabs [data-baseweb="tab"] {
+    font-size: 16px;
+    font-weight: 600;
+    color: #003B88;
+}
+
+/* Headings */
+h2, h3, h4 {
+    color: #003B88 !important;
+}
+
+</style>
+"""
+
+st.markdown(BNM_STYLE, unsafe_allow_html=True)
+
+# ---------- LOGO ABOVE BANNER ----------
+logo_col1, logo_col2, logo_col3 = st.columns([1, 1, 1])
+with logo_col2:
+    st.image("bnm_logo.png", width=250)
+
+# ---------- HEADER ----------
+st.markdown(
+    """
+<div class="banner">
+    <h1>Bank Negara Malaysia — Conduct Risk Dashboard(Prototype)</h1>
+    <p>Monitoring FTFC, Prohibited Conduct & Complaints Handling Across Financial Institutions</p>
+</div>
+""",
+    unsafe_allow_html=True
+)
 
 # ---------- DATA LOADING ----------
-
 @st.cache_data
 def load_data():
     df_ftfc = pd.read_csv("complaints_dummy.csv", parse_dates=["date"])
@@ -21,26 +92,18 @@ def load_data():
     df_handling = pd.read_csv("complaints_handling.csv", parse_dates=["date"])
     bank_customers = pd.read_csv("bank_customers.csv")
 
-    # Add month column for all
     for df in [df_ftfc, df_pbc, df_handling]:
         df["month"] = df["date"].dt.to_period("M").astype(str)
 
     return df_ftfc, df_pbc, df_handling, bank_customers
 
-
 df_ftfc, df_pbc, df_handling, bank_customers = load_data()
 ALL_BANKS = sorted(df_ftfc["bank_name"].unique())
 
-PBC_COLS = [
-    "pbc_hidden_fee",
-    "pbc_misleading_statement",
-    "pbc_harassment",
-    "pbc_unauthorised_txn",
-]
+PBC_COLS = ["pbc_hidden_fee", "pbc_misleading_statement", "pbc_harassment", "pbc_unauthorised_txn"]
 
 
-# ---------- FAIRNESS (FTFC) FUNCTIONS ----------
-
+# ---------- FAIRNESS FUNCTIONS ----------
 def compute_fairness_metrics(df, bank_name=None):
     if bank_name and bank_name != "All banks":
         data = df[df["bank_name"] == bank_name].copy()
@@ -65,7 +128,6 @@ def make_fairness_radar(metrics, title="Fairness Indicators"):
     labels = list(metrics.keys())
     values = list(metrics.values())
 
-    # close loop
     values_closed = values + values[:1]
     angles = np.linspace(0, 2 * np.pi, len(values_closed))
 
@@ -123,7 +185,6 @@ def make_fairness_trend(df, bank_name=None):
 
 
 # ---------- PBC FUNCTIONS ----------
-
 def compute_pbc_counts(df, bank_name=None):
     if bank_name and bank_name != "All banks":
         data = df[df["bank_name"] == bank_name].copy()
@@ -181,7 +242,6 @@ def make_pbc_bar_for_bank(df, bank_name=None):
 
 
 # ---------- COMPLAINTS HANDLING FUNCTIONS ----------
-
 def compute_handling_metrics(df, bank_name=None):
     if bank_name and bank_name != "All banks":
         data = df[df["bank_name"] == bank_name].copy()
@@ -277,20 +337,17 @@ def make_recurrence_trend(df, bank_name=None):
     return fig
 
 
-# ---------- OVERALL RISK SCORE FUNCTIONS ----------
-
+# ---------- OVERALL RISK SCORE ----------
 def build_risk_table():
     risk_rows = []
     for bank in ALL_BANKS:
-        # FTFC
+
         ftfc = compute_fairness_metrics(df_ftfc, bank)
         ftfc_score = np.mean(list(ftfc.values())) if ftfc else 0
 
-        # PBC
         _, total_pbc = compute_pbc_counts(df_pbc, bank)
         pbc_score = total_pbc
 
-        # Handling
         h = compute_handling_metrics(df_handling, bank)
         if h:
             handling_score = (
@@ -314,7 +371,6 @@ def build_risk_table():
 
     df_risk = pd.DataFrame(risk_rows)
 
-    # normalise 0–1
     for col in ["ftfc_score_raw", "pbc_score_raw", "handling_score_raw"]:
         max_val = df_risk[col].max()
         norm_col = col.replace("_raw", "_norm")
@@ -353,7 +409,7 @@ def make_risk_heatmap(df_risk):
         aspect="auto",
         vmin=0,
         vmax=1,
-        cmap="RdYlGn_r",  # green low, red high
+        cmap="RdYlGn_r",
     )
 
     ax.set_yticks([0])
@@ -365,7 +421,7 @@ def make_risk_heatmap(df_risk):
     for j, v in enumerate(scores):
         ax.text(j, 0, f"{v:.2f}", ha="center", va="center", color="black")
 
-    ax.set_title("Overall Conduct Risk Heatmap (0 = low, 1 = high)")
+    ax.set_title("Overall Conduct Risk Heatmap")
     cbar = fig.colorbar(im, ax=ax)
     cbar.set_label("Conduct risk score")
 
@@ -376,155 +432,216 @@ def make_risk_heatmap(df_risk):
 df_risk = build_risk_table()
 
 
-# ---------- HOMEPAGE / HEADER ----------
-
-st.title("🏦 Conduct Risk Dashboard (Prototype)")
-st.markdown(
+# ---------- SIDEBAR BRANDING ----------
+st.sidebar.markdown(
     """
-This prototype dashboard illustrates **market conduct risk indicators** across banks,  
-combining **FTFC**, **Prohibited Business Conduct (PBC)**, and **Complaints Handling** metrics.
-"""
+    <h2 class="sidebar-text">BNM Conduct Analytics</h2>
+    <p class="sidebar-text">Select a bank to drill down into indicators.</p>
+    """,
+    unsafe_allow_html=True
 )
 
-# Top KPI cards
-col1, col2, col3, col4 = st.columns(4)
-with col1:
-    st.metric("Number of banks", len(ALL_BANKS))
-with col2:
-    st.metric("Banks with HIGH risk", int((df_risk["risk_category"] == "High").sum()))
-with col3:
-    st.metric(
-        "Industry average risk score",
-        f"{df_risk['final_score'].mean():.2f}",
-    )
-with col4:
-    highest_row = df_risk.loc[df_risk["final_score"].idxmax()]
-    st.metric("Highest risk bank", highest_row["bank"], f"{highest_row['final_score']:.2f}")
-
-with st.expander("Methodology (summary)"):
-    st.markdown(
-        """
-**Scope**
-
-- Prototype using synthetic data for:
-  - Fair Treatment to Financial Consumers (FTFC)
-  - Prohibited Business Conduct (PBC)
-  - Complaints Handling performance
-
-**Scoring approach**
-
-- FTFC score: average share of complaints with fairness-related issues  
-- PBC score: frequency of complaints with prohibited conduct flags  
-- Complaints handling score: based on resolution time, timeliness, reopen/escalation rates and recurrence  
-- Overall conduct risk score combines:
-  - 30% FTFC
-  - 40% PBC
-  - 30% Complaints handling
-
-Risk categories:
-- **Low**: score < 0.33  
-- **Medium**: 0.33 ≤ score < 0.66  
-- **High**: score ≥ 0.66  
-"""
-    )
-
-
-# ---------- STREAMLIT APP LAYOUT (TABS) ----------
-
-# Bank selector (drill-down)
+# ---------- BANK SELECTOR ----------
 bank_choice = st.sidebar.selectbox(
-    "Select bank to drill down",
+    "Select bank",
     ["All banks"] + ALL_BANKS
 )
 
+# ---------- KPI CARDS (BNM STYLE) ----------
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
+    st.markdown(
+        f"""
+        <div class="metric-container">
+            <h3>{len(ALL_BANKS)}</h3>
+            <p>Total Banks</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+with col2:
+    st.markdown(
+        f"""
+        <div class="metric-container">
+            <h3>{(df_risk['risk_category'] == 'High').sum()}</h3>
+            <p>Banks in High Risk</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+with col3:
+    st.markdown(
+        f"""
+        <div class="metric-container">
+            <h3>{df_risk['final_score'].mean():.2f}</h3>
+            <p>Industry Avg Risk</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+with col4:
+    highest = df_risk.loc[df_risk["final_score"].idxmax()]
+    st.markdown(
+        f"""
+        <div class="metric-container">
+            <h3>{highest['bank']}</h3>
+            <p>Highest Risk ({highest['final_score']:.2f})</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+# ---------- METHODOLOGY (SUMMARY) ----------
+with st.expander("Methodology & Interpretation of Scores"):
+    st.markdown(
+        """
+### **1. Scope of Prototype**
+This dashboard uses synthetic data to illustrate how market conduct risk indicators  
+could be monitored across:
+
+- Fair Treatment to Financial Consumers (**FTFC**)  
+- **Prohibited Business Conduct (PBC)**  
+- **Complaints Handling** performance  
+
+It is intended as a *conceptual prototype* for analytics exploration.
+
+---
+
+### **2. Scoring Approach**
+
+#### **FTFC Score**
+Measures the share of complaints involving:
+- Transparency issues  
+- Suitability concerns  
+- Misleading sales  
+- Unfair fees  
+- Vulnerable consumers  
+
+FTFC Score = *Average % of complaints involving fairness-related issues*
+
+---
+
+#### **PBC Score**
+Counts frequency of key prohibited conduct categories:
+- Hidden or excessive fees  
+- Misleading statements  
+- Harassment  
+- Unauthorised transactions  
+
+Higher frequency → Higher risk.
+
+---
+
+#### **Complaints Handling Score**
+Captures the bank’s behaviour during dispute resolution:
+- Average days to resolve  
+- % resolved within timeline  
+- % reopened  
+- % escalated  
+- % repeat issues  
+
+Longer resolution times and higher recurrence → Higher risk.
+
+---
+
+### **3. Overall Conduct Risk Score**
+
+Final Score =  
+- **30%** FTFC  
+- **40%** PBC  
+- **30%** Complaints Handling  
+
+Risk Category Thresholds:
+- **Low Risk**: < 0.33  
+- **Medium Risk**: 0.33 – 0.66  
+- **High Risk**: ≥ 0.66  
+
+---
+
+### **4. Important Disclaimer**
+This dashboard is a **prototype for analytical exploration only**.  
+It:
+
+- does **not** represent actual BNM supervisory assessments,  
+- does **not** reflect real bank performance,  
+- should not be interpreted as an official BNM view or position.  
+
+The purpose is strictly to test and demonstrate analytical concepts  
+for market conduct supervision.
+"""
+    )
+
+
+# ---------- TABS ----------
 tab1, tab2, tab3, tab4 = st.tabs(
-    ["Fairness (FTFC)", "Prohibited Conduct (PBC)", "Complaints Handling", "Overall Risk"]
+    ["Overall Risk", "Fairness (FTFC)", "Prohibited Conduct", "Complaints Handling"]
 )
 
-# --- Tab 1: Fairness ---
+# --- Tab 1: Overall Risk ---
 with tab1:
-    st.subheader("Fair Treatment to Financial Consumers (FTFC)")
-
-    metrics = compute_fairness_metrics(df_ftfc, bank_choice)
-    if not metrics:
-        st.write("No complaints for this selection.")
-    else:
-        st.write("Fairness indicators (% of complaints):")
-        st.dataframe(pd.DataFrame(metrics, index=["%"]))
-
-        radar_fig = make_fairness_radar(
-            metrics, title=f"Fairness Radar – {bank_choice}"
-        )
-        st.pyplot(radar_fig)
-
-        trend_fig = make_fairness_trend(df_ftfc, bank_choice)
-        if trend_fig:
-            st.pyplot(trend_fig)
-
-# --- Tab 2: PBC ---
-with tab2:
-    st.subheader("Prohibited Business Conduct (PBC)")
-
-    counts, total_pbc = compute_pbc_counts(df_pbc, bank_choice)
-    st.write(f"Total PBC-related complaints: **{total_pbc}**")
-    st.write("Breakdown by PBC category:")
-    st.dataframe(pd.DataFrame.from_dict(counts, orient="index", columns=["count"]))
-
-    pbc_bar_fig = make_pbc_bar_for_bank(df_pbc, bank_choice)
-    st.pyplot(pbc_bar_fig)
-
-    st.write("Industry view (all banks) – PBC heatmap:")
-    pbc_heatmap_fig = make_pbc_heatmap(df_pbc)
-    st.pyplot(pbc_heatmap_fig)
-
-# --- Tab 3: Complaints Handling ---
-with tab3:
-    st.subheader("Complaints Handling Quality")
-
-    handling_metrics = compute_handling_metrics(df_handling, bank_choice)
-    if not handling_metrics:
-        st.write("No complaints for this selection.")
-    else:
-        st.write("Key KPIs:")
-        st.dataframe(
-            pd.DataFrame(handling_metrics, index=["value"]).T.rename(
-                columns={"value": bank_choice}
-            )
-        )
-
-        cp1000 = compute_complaints_per_1000(df_handling, bank_customers)
-        st.write("Complaints per 1,000 customers (all banks):")
-        st.dataframe(cp1000)
-
-        res_fig = make_resolution_timeline(df_handling, bank_choice)
-        if res_fig:
-            st.pyplot(res_fig)
-
-        rec_fig = make_recurrence_trend(df_handling, bank_choice)
-        if rec_fig:
-            st.pyplot(rec_fig)
-
-# --- Tab 4: Overall Risk ---
-with tab4:
-    st.subheader("Overall Conduct Risk Score")
+    st.subheader("Overall Conduct Risk")
 
     st.write("Risk scoring summary (all banks):")
     st.dataframe(df_risk)
 
     st.write("Overall risk heatmap (green = low, red = high):")
-    heatmap_fig = make_risk_heatmap(df_risk)
-    st.pyplot(heatmap_fig)
-
-    st.markdown("---")
-    st.write(
-        "Use the bank selector on the left to drill down into a specific bank, "
-        "then view details in the other tabs (FTFC, PBC, Complaints Handling)."
-    )
+    st.pyplot(make_risk_heatmap(df_risk))
 
     if bank_choice != "All banks":
+        st.markdown("---")
         st.write(f"Currently selected bank: **{bank_choice}**")
         st.write(
             df_risk[df_risk["bank"] == bank_choice][
                 ["bank", "final_score", "risk_category"]
             ]
         )
+
+# --- Tab 2: FTFC ---
+with tab2:
+    st.subheader("Fairness Indicators (FTFC)")
+
+    metrics = compute_fairness_metrics(df_ftfc, bank_choice)
+    if not metrics:
+        st.write("No data available.")
+    else:
+        st.write("Fairness indicators (% of complaints):")
+        st.dataframe(pd.DataFrame(metrics, index=["%"]))
+
+        st.pyplot(make_fairness_radar(metrics, f"FTFC Radar – {bank_choice}"))
+        trend = make_fairness_trend(df_ftfc, bank_choice)
+        if trend:
+            st.pyplot(trend)
+
+# --- Tab 3: PBC ---
+with tab3:
+    st.subheader("Prohibited Business Conduct")
+
+    counts, total_pbc = compute_pbc_counts(df_pbc, bank_choice)
+    st.write(f"Total PBC complaints: **{total_pbc}**")
+    st.dataframe(pd.DataFrame.from_dict(counts, orient="index", columns=["count"]))
+
+    st.pyplot(make_pbc_bar_for_bank(df_pbc, bank_choice))
+
+    st.write("Industry heatmap:")
+    st.pyplot(make_pbc_heatmap(df_pbc))
+
+# --- Tab 4: Handling ---
+with tab4:
+    st.subheader("Complaints Handling")
+
+    handling = compute_handling_metrics(df_handling, bank_choice)
+    if not handling:
+        st.write("No data.")
+    else:
+        st.dataframe(pd.DataFrame(handling, index=["value"]).T)
+
+        cp1000 = compute_complaints_per_1000(df_handling, bank_customers)
+        st.write("Complaints per 1,000 customers (all banks):")
+        st.dataframe(cp1000)
+
+        st.pyplot(make_resolution_timeline(df_handling, bank_choice))
+        st.pyplot(make_recurrence_trend(df_handling, bank_choice))
